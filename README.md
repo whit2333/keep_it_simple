@@ -4,12 +4,12 @@ Keep it Simple : GEANT4, ROOT, and JAVA
 Introduction
 ------------
 
-###Rule 1: Don't reinvent wheels.
+###Don't reinvent wheels.
 
 ROOT is 2 decades old and works great. It is under active development and is 
 very well maintained and documented.
 
-Take a look at the event class.
+Take a look at this event class.
 
     class DetectorEvent {
     
@@ -34,7 +34,8 @@ Take a look at the event class.
 
 ###So what?
 
-Before running a script, take a look at how it is used.
+Before running the script fill_run.cxx, lets take a look at how 
+<code>DetectorEvent</code> is used.
 
     TFile * f = new TFile(Form("run1.root",run_number),"UPDATE");
     TTree * t = new TTree("simpleTree","keep it simple");
@@ -64,6 +65,22 @@ Before running a script, take a look at how it is used.
 **That is it!**
 All the complication of creating the event structures falls into the classes.  
 These are the same objects used in various analyses! 
+
+###Run the example
+
+To run compile and run this example do the following in root:
+
+    .L Event.cxx+
+    .L fill_run.cxx+
+    fill_run(1)
+    .q
+
+This compiles the Event class and fill`_run function, the runs fill`_run.
+
+Looking at the output file in a TBrowser:
+
+![Image of Tree](https://octodex.github.com/images/yaktocat.png)
+
 
 ###Using in Geant4
 
