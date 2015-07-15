@@ -4,10 +4,10 @@ Keep it Simple : GEANT4, ROOT, and JAVA
 Introduction
 ------------
 
-Rule 1. Don't reinvent wheels.
+###Rule 1: Don't reinvent wheels.
 
 ROOT is 2 decades old and works great. It is under active development and is 
-very well maintained. 
+very well maintained and documented.
 
 Take a look at the event class.
 
@@ -32,9 +32,9 @@ Take a look at the event class.
 
     };
 
-**So what?**
+###So what?
 
-Well, this how it is used.
+Before running a script, take a look at how it is used.
 
     TFile * f = new TFile(Form("run1.root",run_number),"UPDATE");
     TTree * t = new TTree("simpleTree","keep it simple");
@@ -62,13 +62,87 @@ Well, this how it is used.
     }
 
 **That is it!**
- 
+All the complication of creating the event structures falls into the classes.  
+These are the same objects used in various analyses! 
+
+###Using in Geant4
+
+
+GEANT4 is also under active development and is well maintained and documented.  
+Let's look at [how we can use 
+hits](http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch04s04.html).
+Pretending the [existing concrete sensitive detector 
+class](http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch04s04.html#sect.Hits.G4VPrim) 
+are of no use to us, we implement our own sensitive detector class. One of the 
+[http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch04s04.html#sect.Hits.SensDet](user 
+hooks for the sensitive detector) is ProcessEvent:
+
+    G4bool MyDetector::ProcessHits(G4Step * step, G4TouchableHistory *history )
+    {
+       if( StepCreatesIonPair( step->GetStepLength ) ) {
+          SimpleDriftChamberHit * ahit   = events->AddDCHit();
+          G4TouchableHistory* touchable  = (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
+          ahit->fChannel  = touchable->GetReplicaNumber(1);
+          ahit->fPosition = step->GetPreStepPoint()->GetPosition();
+          ahit->fPosition.SetT(step->GetPreStepPoint()->GetGlobalTime());
+          ahit->fPDGCode  = step->GetTrack()->GetParticleDefinition()->GetPDGEncoding();
+       }
+    }
+
+Super simple!
+
+###What about Evio?
+
+The idea is that the geant4/gemc output can be run through another program 
+which generates the appropriate structure for the clas12 reconstruction. This 
+program creates all the desired signals from the gemc output. It can be fast 
+and crude or slow and detailed. It depends on what your needs are.
+
+Either way, when the banks change, you just need update this program. No need 
+to re-run the geant4 simulation part!
+
+
+###What about Java?
+
+The clas12 reconstruction developers have done a nice job and are making 
+significant progress. There is one question that should be seriously thought 
+about. 
+
+**Why are we using EVIO for the output?**
+
+If we never actually ran experiments it would seem like a very pointless 
+exercise. The only reason we use EVIO is because that is what the DAQ outputs.  
+Right? There is nothing special about the EVIO file format. 
+
+Since we are "offline" software, let us ignore how the real data EVIO was 
+produced. We only write EVIO to emulate the data structures of the real data so 
+we can use the same reconstruction and analysis code.
+
+The wonderful reconstruction software reads in the EVIO file analyzes it and 
+then ...  dumps it back into the crude EVIO file format. Womp womp.
+
+It should be accepted by everyone that the physics analysis done by students 
+will be done in ROOT.  Coatjava can never replace that. So again... 
+
+**Why are we using EVIO for the output?**
+
+Honestly, is it worth it? Is this a classic case of we have a hammer so 
+everything is nail?
+
+###Java to ROOT
+
+It needs to happen...
+
+Here is a small project called 
+[javaROOT](https://confluence.slac.stanford.edu/display/ilc/javaROOT).  It 
+works and is a nice template for how to use 
+[SWIG](http://www.swig.org/Doc1.3/Java.html).
+
+Now we can write classes that can be saved to ROOT files and done in JAVA. 
 
 
 
-
-Oh, no! I lost the Event class...
----------------------------------
+###Oh, no! I lost the Event class...
 
 Say some time in the future some one wants to read one of these root files. But 
 the source files, headers, and libraries were all lost. It is OK. ROOT will 
@@ -120,41 +194,6 @@ the same analysis.
        Double_t        fDC_Hits_fStepLength[kMaxfDC_Hits];   //[fDC_Hits_]
        Int_t           fDC_Hits_fPDGCode[kMaxfDC_Hits];   //[fDC_Hits_]
        TLorentzVector  fDC_Hits_fPosition[kMaxfDC_Hits];
-    
-       // List of branches
-       TBranch        *b_aDetectorEvent_fRunNumber;   //!
-       TBranch        *b_aDetectorEvent_fEventNumber;   //!
-       TBranch        *b_aDetectorEvent_fSimple_Hits;   //!
-       TBranch        *b_aDetectorEvent_fNTDC_Hits;   //!
-       TBranch        *b_aDetectorEvent_fNADC_Hits;   //!
-       TBranch        *b_aDetectorEvent_fNDC_Hits;   //!
-       TBranch        *b_aDetectorEvent_fTDC_Hits_;   //!
-       TBranch        *b_fTDC_Hits_fUniqueID;   //!
-       TBranch        *b_fTDC_Hits_fBits;   //!
-       TBranch        *b_fTDC_Hits_fChannel;   //!
-       TBranch        *b_fTDC_Hits_fTDC;   //!
-       TBranch        *b_fTDC_Hits_fTime;   //!
-       TBranch        *b_aDetectorEvent_fADC_Hits_;   //!
-       TBranch        *b_fADC_Hits_fUniqueID;   //!
-       TBranch        *b_fADC_Hits_fBits;   //!
-       TBranch        *b_fADC_Hits_fChannel;   //!
-       TBranch        *b_fADC_Hits_fADC;   //!
-       TBranch        *b_fADC_Hits_fCharge;   //!
-       TBranch        *b_aDetectorEvent_fDC_Hits_;   //!
-       TBranch        *b_fDC_Hits_fUniqueID;   //!
-       TBranch        *b_fDC_Hits_fBits;   //!
-       TBranch        *b_fDC_Hits_fStepLength;   //!
-       TBranch        *b_fDC_Hits_fPDGCode;   //!
-       TBranch        *b_fDC_Hits_fPosition;   //!
-    
-       LostEventClass(TTree *tree=0);
-       virtual ~LostEventClass();
-       virtual Int_t    Cut(Long64_t entry);
-       virtual Int_t    GetEntry(Long64_t entry);
-       virtual Long64_t LoadTree(Long64_t entry);
-       virtual void     Init(TTree *tree);
-       virtual void     Loop();
-       virtual Bool_t   Notify();
-       virtual void     Show(Long64_t entry = -1);
+       ...
     };
 
