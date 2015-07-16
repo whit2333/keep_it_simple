@@ -79,8 +79,9 @@ This compiles the Event class and fill`_run function, the runs fill`_run.
 
 Looking at the output file in a TBrowser:
 
-![Image of 
-Tree](https://raw.githubusercontent.com/whit2333/keep_it_simple/master/TBrowser_1.png)
+![Image of Tree](https://raw.githubusercontent.com/whit2333/keep_it_simple/master/TBrowser_1.png)
+
+All the event/hit structure is there. 
 
 
 ###Using in Geant4
@@ -107,7 +108,7 @@ hooks for the sensitive detector) is ProcessEvent:
        }
     }
 
-Super simple!
+Super simple! Super fast!
 
 ###What about Evio?
 
@@ -119,18 +120,25 @@ and crude or slow and detailed. It depends on what your needs are.
 Either way, when the banks change, you just need update this program. No need 
 to re-run the geant4 simulation part!
 
-
 ###What about Java?
 
 The clas12 reconstruction developers have done a nice job and are making 
-significant progress. There is one question that should be seriously thought 
-about. 
+significant progress. The event viewer looks great and it is awesome how the 
+reconstruction scales with more computing power.
+
+However, like most great things, the scope of the project should be clearly 
+defined. Otherwise, it will shift into something it originally was not designed 
+to be. When does reconstruction end? How does it end?
+
+There is another related question that should be seriously thinking about. 
 
 **Why are we using EVIO for the output?**
 
 If we never actually ran experiments it would seem like a very pointless 
-exercise. The only reason we use EVIO is because that is what the DAQ outputs.  
-Right? There is nothing special about the EVIO file format. 
+exercise to use EVIO. The only reason we use EVIO is because that is what the 
+DAQ system uses it (for good reason). There is nothing special about the EVIO 
+file format to us, the "offline" software developers. It is just the format in 
+which the data is handed to us.
 
 Since we are "offline" software, let us ignore how the real data EVIO was 
 produced. We only write EVIO to emulate the data structures of the real data so 
@@ -156,7 +164,11 @@ Here is a small project called
 works and is a nice template for how to use 
 [SWIG](http://www.swig.org/Doc1.3/Java.html).
 
-Now we can write classes that can be saved to ROOT files and done in JAVA. 
+Now we can write classes that can be saved to ROOT files from JAVA.
+
+This is motivated by the fact that final analysis will be done using ROOT.
+It also provides a clean separation of scope.
+
 
 
 
@@ -214,4 +226,13 @@ the same analysis.
        TLorentzVector  fDC_Hits_fPosition[kMaxfDC_Hits];
        ...
     };
+
+
+###You want more reasons why ROOT is nice?
+
+**Yes.** Save all your objects to file!
+
+see file
+
+
 
